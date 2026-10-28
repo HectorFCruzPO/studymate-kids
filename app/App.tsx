@@ -1,12 +1,75 @@
 
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
+import ParentOnboardingScreen from './src/screens/ParentOnboardingScreen';
+import ChildCountScreen from './src/screens/ChildCountScreen';
+import ChildProfileScreen, {
+  type ChildProfileInput,
+} from './src/screens/ChildProfileScreen';
+import {
+  initializeDatabase,
+  loadFamily,
+  saveFamily,
+  type SavedFamily,
+} from './src/database/database';
 
 const introVideo = require('./assets/videos/StudyMate_HPlus_Development_Final_5_Seconds.mp4');
 
 export default function App() {
   const [showIntro, setShowIntro] = useState(true);
+  
+useEffect(() => {
+  let isMounted = true;
+
+  async function setupDatabase() {
+    try {
+      // Step 1: Open the database and create tables if needed.
+      await initializeDatabase();
+
+      // Step 2: Look for a previously saved family.
+      const family = await loadFamily();
+
+      // Step 3: Update the app only if this screen is still mounted.
+      if (isMounted) {
+        setSavedFamily(family);
+        setDatabaseError(false);
+        setDatabaseReady(true);
+      }
+
+      console.log(
+        family
+          ? 'Saved family loaded successfully'
+          : 'No saved family found - onboarding required'
+      );
+    } catch (error) {
+      console.error('Database startup failed:', error);
+
+      if (isMounted) {
+        setDatabaseError(true);
+        setDatabaseReady(true);
+      }
+    }
+  }
+
+  setupDatabase();
+
+  return () => {
+    isMounted = false;
+  };
+}, []);
+
+ const [onboardingStep, setOnboardingStep] = useState<
+  'parent' | 'children' | 'profile' | 'complete'
+>('parent');
+
+const [totalChildren, setTotalChildren] = useState(1);
+const [childProfiles, setChildProfiles] = useState<ChildProfileInput[]>([]);
+const [parentEmail, setParentEmail] = useState('');
+const [parentBirthYear, setParentBirthYear] = useState<number | null>(null);
+const [savedFamily, setSavedFamily] = useState<SavedFamily | null>(null);
+const [databaseReady, setDatabaseReady] = useState(false);
+const [databaseError, setDatabaseError] = useState(false);
 
   const player = useVideoPlayer(introVideo, (videoPlayer) => {
     videoPlayer.loop = false;
@@ -49,17 +112,101 @@ export default function App() {
     );
   }
 
+  
+if (onboardingStep === 'parent') {
   return (
-    <View style={styles.welcomeContainer}>
-      <Text style={styles.title}>StudyMate Kids</Text>
-      <Text style={styles.subtitle}>
-        Learning is an adventure!
-      </Text>
-      <Text style={styles.message}>
-        Welcome to your learning journey!
-      </Text>
-    </View>
+    <ParentOnboardingScreen
+  onContinue={(email, birthYear) => {
+    setParentEmail(email);
+    setParentBirthYear(birthYear);
+    setOnboardingStep('children');
+  }}
+/>
   );
+}
+
+
+if (onboardingStep === 'children') {
+  return (
+    <ChildCountScreen
+      onBack={() => setOnboardingStep('parent')}
+      onContinue={(childCount) => {
+        setTotalChildren(childCount);
+        setChildProfiles([]);
+        setOnboardingStep('profile');
+      }}
+    />
+  );
+}
+
+if (onboardingStep === 'profile') {
+  return (
+    <ChildProfileScreen
+      key={childProfiles.length}
+      childNumber={childProfiles.length + 1}
+      totalChildren={totalChildren}
+      onBack={() => {
+        if (childProfiles.length > 0) {
+          setChildProfiles((previous) => previous.slice(0, -1));
+        } else {
+          setOnboardingStep('children');
+        }
+      }}
+      
+onContinue={async (child) => {
+  const updatedProfiles = [...childProfiles, child];
+
+  if (updatedProfiles.length < totalChildren) {
+    setChildProfiles(updatedProfiles);
+    return;
+  }
+
+  if (parentBirthYear === null || !parentEmail) {
+    Alert.alert(
+      'Missing information',
+      'Please go back and complete the parent information.'
+    );
+    return;
+  }
+
+  try {
+    await saveFamily(
+      parentEmail,
+      parentBirthYear,
+      updatedProfiles
+    );
+
+    setChildProfiles(updatedProfiles);
+    setOnboardingStep('complete');
+
+    console.log('Family saved successfully to SQLite');
+  } catch (error) {
+    console.error('Failed to save family:', error);
+
+    Alert.alert(
+      'Unable to save',
+      'Your family information could not be saved. Please try again.'
+    );
+  }
+}}
+
+    />
+  );
+}
+
+return (
+  <View style={styles.welcomeContainer}>
+    <Text style={styles.title}>Setup Complete! 🎉</Text>
+    <Text style={styles.subtitle}>
+      {childProfiles.length} child profile(s) created.
+    </Text>
+    <Text style={styles.message}>
+      Next, we'll save these profiles and build the learning home screen.
+    </Text>
+  </View>
+);
+
+
 }
 
 const styles = StyleSheet.create({
