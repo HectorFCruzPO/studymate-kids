@@ -196,3 +196,100 @@ export async function loadFamily(): Promise<SavedFamily | null> {
     await db.closeAsync();
   }
 }
+
+
+export async function setActiveChild(
+  childId: number
+): Promise<void> {
+  const db = await SQLite.openDatabaseAsync(DATABASE_NAME);
+
+  try {
+    if (!Number.isInteger(childId) || childId <= 0) {
+      throw new Error('Invalid child ID');
+    }
+
+    const child = await db.getFirstAsync<{ id: number }>(
+      'SELECT id FROM children WHERE id = ?',
+      [childId]
+    );
+
+    if (!child) {
+      throw new Error('Child profile not found');
+    }
+
+    const result = await db.runAsync(
+      `UPDATE app_settings
+       SET active_child_id = ?
+       WHERE id = 1 AND onboarding_completed = 1`,
+      [childId]
+    );
+
+    if (result.changes !== 1) {
+      throw new Error('Unable to update active child');
+    }
+  } finally {
+    await db.closeAsync();
+  }
+}
+
+export async function addChild(
+  child: ChildProfileData
+): Promise<number> {
+  const name = child.name.trim();
+
+  if (
+    !name ||
+    !Number.isInteger(child.age) ||
+    child.age < 3 ||
+    child.age > 12 ||
+    !child.avatarId
+  ) {
+    throw new Error('Invalid child profile');
+  }
+
+  const db = await SQLite.openDatabaseAsync(DATABASE_NAME);
+
+  try {
+  let newChildId = 0;
+
+  await db.withExclusiveTransactionAsync(
+    async (tx) => {
+        const parent = await tx.getFirstAsync<{
+          id: number;
+        }>(
+          'SELECT id FROM parents LIMIT 1'
+        );
+
+        if (!parent) {
+          throw new Error('No existing family found');
+        }
+
+        const count = await tx.getFirstAsync<{
+          total: number;
+        }>(
+          'SELECT COUNT(*) AS total FROM children WHERE parent_id = ?',
+          [parent.id]
+        );
+
+        if ((count?.total ?? 0) >= 2) {
+          throw new Error('Maximum of two children allowed');
+        }
+
+        const result = await tx.runAsync(
+          `INSERT INTO children
+           (parent_id, name, age, avatar_id, stars, coins)
+           VALUES (?, ?, ?, ?, 0, 0)`,
+          [parent.id, name, child.age, child.avatarId]
+        );
+
+       
+        newChildId = result.lastInsertRowId;
+      }
+    );
+
+    return newChildId;
+  } finally {
+    await db.closeAsync();
+  }
+}
+

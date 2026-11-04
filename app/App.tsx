@@ -8,16 +8,25 @@ import ChildProfileScreen, {
   type ChildProfileInput,
 } from './src/screens/ChildProfileScreen';
 import {
+  addChild,
   initializeDatabase,
   loadFamily,
   saveFamily,
   type SavedFamily,
 } from './src/database/database';
+import ChildHomeScreen from './src/screens/ChildHomeScreen';
+import SwitchChildScreen from './src/screens/SwitchChildScreen';
+import { setActiveChild } from './src/database/database';
+
 
 const introVideo = require('./assets/videos/StudyMate_HPlus_Development_Final_5_Seconds.mp4');
 
 export default function App() {
   const [showIntro, setShowIntro] = useState(true);
+  const [showSwitchChild, setShowSwitchChild] = useState(false);
+  const [showAddChild, setShowAddChild] = useState(false);
+
+
   
 useEffect(() => {
   let isMounted = true;
@@ -111,7 +120,121 @@ const [databaseError, setDatabaseError] = useState(false);
       </View>
     );
   }
+if (databaseError) {
+  return (
+    <View style={styles.welcomeContainer}>
+      <Text style={styles.title}>Something went wrong</Text>
+      <Text style={styles.message}>
+        We couldn't load your saved profiles. Please restart the app.
+      </Text>
+    </View>
+  );
+}
 
+if (!databaseReady) {
+  return (
+    <View style={styles.welcomeContainer}>
+      <Text style={styles.message}>Loading your adventures...</Text>
+    </View>
+  );
+}
+
+if (savedFamily) {
+  const activeChild =
+    savedFamily.children.find(
+      (child) => child.id === savedFamily.activeChildId
+    ) ?? savedFamily.children[0];
+
+if (showAddChild) {
+  return (
+    <ChildProfileScreen
+      childNumber={savedFamily.children.length + 1}
+      totalChildren={2}
+      onBack={() => {
+        setShowAddChild(false);
+        setShowSwitchChild(true);
+      }}
+      
+onContinue={async (child) => {
+  try {
+    await addChild(child);
+
+    const updatedFamily = await loadFamily();
+
+    if (!updatedFamily) {
+      throw new Error('Unable to load updated family');
+    }
+
+    setSavedFamily(updatedFamily);
+    setShowAddChild(false);
+    setShowSwitchChild(true);
+
+    Alert.alert(
+      'Child Added!',
+      `${child.name} is ready for an adventure!`
+    );
+  } catch (error) {
+    console.error('Failed to add child:', error);
+
+    Alert.alert(
+      'Unable to Add Child',
+      error instanceof Error
+        ? error.message
+        : 'Please try again.'
+    );
+  }
+}}
+
+    />
+  );
+}
+
+if (showSwitchChild) {
+  return (
+    <SwitchChildScreen
+      children={savedFamily.children}
+      activeChildId={savedFamily.activeChildId}
+      
+onSelectChild={async (childId) => {
+  try {
+    await setActiveChild(childId);
+
+    const updatedFamily = await loadFamily();
+
+    if (!updatedFamily) {
+      throw new Error('Unable to load selected child');
+    }
+
+    setSavedFamily(updatedFamily);
+    setShowSwitchChild(false);
+  } catch (error) {
+    console.error('Failed to switch child:', error);
+
+    Alert.alert(
+      'Unable to Switch Child',
+      'Please try again.'
+    );
+  }
+}}
+
+      onBack={() => setShowSwitchChild(false)}
+      onAddChild={() => {
+        setShowAddChild(true);
+        setShowSwitchChild(false);
+   }}
+    />
+  );
+}
+
+
+return (
+  <ChildHomeScreen
+    child={activeChild}
+    onSwitchChild={() => setShowSwitchChild(true)}
+  />
+);
+
+}
   
 if (onboardingStep === 'parent') {
   return (
@@ -171,15 +294,21 @@ onContinue={async (child) => {
 
   try {
     await saveFamily(
-      parentEmail,
-      parentBirthYear,
-      updatedProfiles
-    );
+  parentEmail,
+  parentBirthYear,
+  updatedProfiles
+);
 
-    setChildProfiles(updatedProfiles);
-    setOnboardingStep('complete');
+const family = await loadFamily();
 
-    console.log('Family saved successfully to SQLite');
+if (!family) {
+  throw new Error('Family was saved but could not be loaded');
+}
+
+setChildProfiles(updatedProfiles);
+setSavedFamily(family);
+
+console.log('Family saved and loaded successfully');
   } catch (error) {
     console.error('Failed to save family:', error);
 
