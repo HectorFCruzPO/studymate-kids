@@ -52,3 +52,10 @@ export const worldColors: Record<
     background: '#F0FDF4',
   },
 };
+
+
+export const worldBackgrounds = {
+  space: require('../../assets/worlds/space.png'),
+  magic: require('../../assets/worlds/magic.png'),
+  dinosaurs: require('../../assets/worlds/dinosaurs.png'),
+};

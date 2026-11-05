@@ -6,10 +6,12 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ImageBackground,
 } from 'react-native';
 
 import type { SavedChild } from '../database/database';
-import { getAvatarWorld, worldColors } from '../themes/avatarThemes';
+import { getAvatarWorld, worldColors, worldBackgrounds } from '../themes/avatarThemes';
+
 
 
 const AVATAR_IMAGES = {
@@ -37,7 +39,10 @@ export default function ChildHomeScreen({
     AVATAR_IMAGES[child.avatar_id as keyof typeof AVATAR_IMAGES] ??
     AVATAR_IMAGES.nova;   
     const activeWorld = getAvatarWorld(child.avatar_id);
-    const theme = worldColors[activeWorld];
+    const theme = worldColors[activeWorld];   
+    const backgroundImage = worldBackgrounds[activeWorld];
+
+
     
 const themedLearningCard = [
   styles.learningCard,
@@ -50,10 +55,26 @@ const themedLearningCard = [
 
 
   return (
-    <ScrollView      
-      style={[styles.container, { backgroundColor: theme.background }]} 
-      contentContainerStyle={styles.content}
+    <ImageBackground     
+      source={backgroundImage ?? undefined}
+      style={{ flex: 1 }}
+      resizeMode="cover"
     >
+     
+<ScrollView
+ 
+style={[
+  styles.container,
+  {
+    backgroundColor: backgroundImage
+      ? 'transparent'
+      : theme.background,
+  },
+]}
+
+  contentContainerStyle={styles.content}
+>
+
       
 <View
   style={[
@@ -74,7 +95,11 @@ const themedLearningCard = [
       marginBottom: 12,
     }}
   >
-    <Text style={styles.brand}>STUDYMATE KIDS</Text>
+    
+<Text style={[styles.brand, { color: theme.primary }]}>
+  STUDYMATE KIDS
+</Text>
+
 
     <TouchableOpacity
       onPress={onSwitchChild}
@@ -169,6 +194,7 @@ const themedLearningCard = [
         Your adventures are coming soon!
       </Text>
     </ScrollView>
+    </ImageBackground>
   );
 }
 
