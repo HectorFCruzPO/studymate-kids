@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
   ImageBackground,
+  useWindowDimensions,
 } from 'react-native';
 
 import type { SavedChild } from '../database/database';
@@ -37,7 +38,9 @@ export default function ChildHomeScreen({
 }: Props) {
       const avatarImage =
     AVATAR_IMAGES[child.avatar_id as keyof typeof AVATAR_IMAGES] ??
-    AVATAR_IMAGES.nova;   
+    AVATAR_IMAGES.nova;       
+    const { width, height } = useWindowDimensions();
+    const isLandscape = width > height;
     const activeWorld = getAvatarWorld(child.avatar_id);
     const theme = worldColors[activeWorld];   
     const backgroundImage = worldBackgrounds[activeWorld];
@@ -121,14 +124,21 @@ style={[
       />
     </TouchableOpacity>
   </View>
-
+  
+    
+<View
+  style={[
+    styles.profileContent,
+    { flexDirection: isLandscape ? 'row' : 'column' },
+  ]}
+>
 
         <Image
           source={avatarImage}
           style={styles.avatar}
           resizeMode="cover"
         />
-
+       <View style={{ alignItems: 'center' }}>
         <Text style={styles.title}>
           Hi, {child.name}! 👋
         </Text>
@@ -147,11 +157,13 @@ style={[
           </Text>
         </View>
       </View>
+    </View>
+    </View>
 
      
-<Text style={styles.sectionTitle}>
-  Your Learning Adventures
-</Text>
+    <Text style={styles.sectionTitle}>
+     Your Learning Adventures
+   </Text>
 
 <View style={styles.grid}>
 
@@ -207,13 +219,21 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 50,
   },
-  welcomeCard: {
-    backgroundColor: '#FFFFFF',
+  welcomeCard: {    
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
     borderRadius: 24,
-    padding: 24,
+    padding: 12,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 10,
   },
+  
+profileContent: {
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '100%',
+  gap: 16,
+},
+
   brand: {
     fontSize: 14,
     fontWeight: 'bold',
@@ -222,10 +242,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   avatar: {
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-    marginBottom: 16,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: 8,
   },
   title: {
     fontSize: 30,
@@ -242,7 +262,7 @@ const styles = StyleSheet.create({
   rewards: {
     flexDirection: 'row',
     gap: 20,
-    marginTop: 22,
+    marginTop: 8,
   },
   rewardText: {
     fontSize: 16,
