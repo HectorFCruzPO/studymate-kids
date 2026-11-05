@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 
 import type { SavedChild } from '../database/database';
+import { getAvatarWorld, worldColors } from '../themes/avatarThemes';
+
 
 const AVATAR_IMAGES = {
   nova: require('../../assets/avatars/nova.png'),
@@ -33,15 +35,36 @@ export default function ChildHomeScreen({
 }: Props) {
       const avatarImage =
     AVATAR_IMAGES[child.avatar_id as keyof typeof AVATAR_IMAGES] ??
-    AVATAR_IMAGES.nova;
+    AVATAR_IMAGES.nova;   
+    const activeWorld = getAvatarWorld(child.avatar_id);
+    const theme = worldColors[activeWorld];
+    
+const themedLearningCard = [
+  styles.learningCard,
+  {
+    borderWidth: 2,
+    borderColor: theme.secondary,
+  },
+];
+
+
 
   return (
-    <ScrollView
-      style={styles.container}
+    <ScrollView      
+      style={[styles.container, { backgroundColor: theme.background }]} 
       contentContainerStyle={styles.content}
     >
       
-<View style={styles.welcomeCard}>
+<View
+  style={[
+    styles.welcomeCard,
+    {
+      borderWidth: 3,
+      borderColor: theme.secondary,
+    },
+  ]}
+>
+
   <View
     style={{
       width: '100%',
@@ -100,33 +123,41 @@ export default function ChildHomeScreen({
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>
-        Your Learning Adventures
-      </Text>
+     
+<Text style={styles.sectionTitle}>
+  Your Learning Adventures
+</Text>
 
-      <View style={styles.grid}>
-        <View style={styles.learningCard}>
-          <Text style={styles.cardIcon}>🔢</Text>
-          <Text style={styles.cardTitle}>
-            Numbers & Counting
-          </Text>
+<View style={styles.grid}>
+
+
+      
+      <View  style={themedLearningCard}>
+        <Text style={styles.cardIcon}>🔢</Text>
+        <Text style={styles.cardTitle}>
+          Numbers & Counting
+        </Text>
         </View>
 
-        <View style={styles.learningCard}>
+
+        
+        <View style={themedLearningCard}>
           <Text style={styles.cardIcon}>🔤</Text>
           <Text style={styles.cardTitle}>
             Letters & Sounds
           </Text>
         </View>
 
-        <View style={styles.learningCard}>
+        
+        <View style={themedLearningCard}>
           <Text style={styles.cardIcon}>🎨</Text>
           <Text style={styles.cardTitle}>
             Colors & Shapes
           </Text>
         </View>
 
-        <View style={styles.learningCard}>
+       
+        <View style={themedLearningCard}>
           <Text style={styles.cardIcon}>🦖</Text>
           <Text style={styles.cardTitle}>
             Animals & Discovery
