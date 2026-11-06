@@ -25,7 +25,13 @@ const AVATAR_IMAGES = {
 type Props = {
   children: SavedChild[];
   activeChildId: number;
+  parentLanguage: 'en' | 'es';
+  onChangeParentLanguage: (language: 'en' | 'es') => void;
   onSelectChild: (childId: number) => void;
+  onChangeLanguage: (
+    childId: number,
+    language: 'en' | 'es'
+  ) => void;
   onBack: () => void;
   onAddChild: () => void;
 };
@@ -33,7 +39,10 @@ type Props = {
 export default function SwitchChildScreen({
   children,
   activeChildId,
+  parentLanguage,
+  onChangeParentLanguage,
   onSelectChild,
+  onChangeLanguage,
   onBack,
   onAddChild,
 }: Props) {
@@ -47,14 +56,67 @@ export default function SwitchChildScreen({
         onPress={onBack}
         accessibilityRole="button"
       >
-        <Text style={styles.backText}>← Back</Text>
+        
+<Text style={styles.backText}>
+  {parentLanguage === 'es' ? '← Volver' : '← Back'}
+</Text>
+
       </TouchableOpacity>
 
-      <Text style={styles.title}>Who's Playing?</Text>
 
-      <Text style={styles.subtitle}>
-        Choose your explorer to continue the adventure!
+<View
+  style={{
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginBottom: 20,
+  }}
+>
+  {(['en', 'es'] as const).map((language) => (
+    <TouchableOpacity
+      key={language}
+      onPress={() => onChangeParentLanguage(language)}
+      accessibilityRole="button"
+      accessibilityLabel={
+        language === 'en' ? 'Parent language: English' : 'Idioma del adulto: Español'
+      }
+      accessibilityState={{
+        selected: parentLanguage === language,
+      }}
+      style={{
+        minHeight: 48,
+        minWidth: 110,
+        paddingHorizontal: 12,
+        borderRadius: 14,
+        borderWidth: 2,
+        borderColor:
+          parentLanguage === language ? '#2463EB' : '#CBD5E1',
+        backgroundColor:
+          parentLanguage === language ? '#DBEAFE' : '#FFFFFF',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+        {language === 'en' ? '🇺🇸 English' : '🇪🇸 Español'}
       </Text>
+    </TouchableOpacity>
+  ))}
+</View>
+
+      
+<Text style={styles.title}>
+  {parentLanguage === 'es' ? '¿Quién va a jugar?' : "Who's Playing?"}
+</Text>
+
+
+      
+<Text style={styles.subtitle}>
+  {parentLanguage === 'es'
+    ? '¡Elige tu explorador para continuar la aventura!'
+    : 'Choose your explorer to continue the adventure!'}
+</Text>
+
 
       <View style={styles.profileList}>
         {children.map((child) => {
@@ -65,17 +127,23 @@ export default function SwitchChildScreen({
               child.avatar_id as keyof typeof AVATAR_IMAGES
             ] ?? AVATAR_IMAGES.nova;
 
-          return (
-            <TouchableOpacity
-              key={child.id}
-              style={[
-                styles.profileCard,
-                isActive && styles.activeCard,
-              ]}
-              onPress={() => onSelectChild(child.id)}
-              accessibilityRole="button"
-              accessibilityLabel={`Play as ${child.name}`}
-            >
+          
+return (
+  <View
+    key={child.id}
+    style={[
+      styles.profileCard,
+      isActive && styles.activeCard,
+    ]}
+  >
+
+<TouchableOpacity
+  onPress={() => onSelectChild(child.id)}
+  accessibilityRole="button"
+  accessibilityLabel={`Play as ${child.name}`}
+  style={{ alignItems: 'center', width: '100%', minHeight: 48 }}
+>
+
               <Image
                 source={avatarImage}
                 style={styles.avatar}
@@ -87,15 +155,62 @@ export default function SwitchChildScreen({
               </Text>
 
               {isActive && (
-                <Text style={styles.activeLabel}>
-                  ✓ Currently Playing
-                </Text>
+                
+<Text style={styles.activeLabel}>
+  {parentLanguage === 'es'
+    ? '✓ Jugando ahora'
+    : '✓ Currently Playing'}
+</Text>
+
               )}
 
               <Text style={styles.rewards}>
                 ⭐ {child.stars}   🪙 {child.coins}
               </Text>
-            </TouchableOpacity>
+              
+</TouchableOpacity>
+
+<View
+  style={{
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 16,
+  }}
+>
+  {(['en', 'es'] as const).map((language) => (
+    <TouchableOpacity
+      key={language}
+      onPress={() => onChangeLanguage(child.id, language)}
+      accessibilityRole="button"
+      accessibilityLabel={
+        language === 'en' ? 'English' : 'Español'
+      }
+      accessibilityState={{
+        selected: child.language === language,
+      }}
+      style={{
+        minHeight: 48,
+        minWidth: 110,
+        paddingHorizontal: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 14,
+        borderWidth: 2,
+        borderColor:
+          child.language === language ? '#2463EB' : '#CBD5E1',
+        backgroundColor:
+          child.language === language ? '#DBEAFE' : '#FFFFFF',
+      }}
+    >
+      <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+        {language === 'en' ? '🇺🇸 English' : '🇪🇸 Español'}
+      </Text>
+    </TouchableOpacity>
+  ))}
+</View>
+
+            </View>
           );
         
         })}

@@ -13,6 +13,8 @@ import {
   loadFamily,
   saveFamily,
   type SavedFamily,
+  updateChildLanguage,
+  updateParentLanguage,
 } from './src/database/database';
 import ChildHomeScreen from './src/screens/ChildHomeScreen';
 import SwitchChildScreen from './src/screens/SwitchChildScreen';
@@ -193,7 +195,32 @@ if (showSwitchChild) {
   return (
     <SwitchChildScreen
       children={savedFamily.children}
-      activeChildId={savedFamily.activeChildId}
+      activeChildId={savedFamily.activeChildId}   
+      parentLanguage={savedFamily.parent.language}
+
+      
+onChangeParentLanguage={async (language) => {
+  try {
+    await updateParentLanguage(savedFamily.parent.id, language);
+
+    const updatedFamily = await loadFamily();
+
+    if (!updatedFamily) {
+      throw new Error('Unable to reload family');
+    }
+
+    setSavedFamily(updatedFamily);
+  } catch (error) {
+    console.error('Failed to update parent language:', error);
+
+    Alert.alert(
+      'Unable to Change Language',
+      'Please try again.'
+    );
+  }
+}}
+
+      
       
 onSelectChild={async (childId) => {
   try {
@@ -216,6 +243,29 @@ onSelectChild={async (childId) => {
     );
   }
 }}
+
+      
+onChangeLanguage={async (childId, language) => {
+  try {
+    await updateChildLanguage(childId, language);
+
+    const updatedFamily = await loadFamily();
+
+    if (!updatedFamily) {
+      throw new Error('Unable to reload family');
+    }
+
+    setSavedFamily(updatedFamily);
+  } catch (error) {
+    console.error('Failed to update language:', error);
+
+    Alert.alert(
+      'Unable to Change Language',
+      'Please try again.'
+    );
+  }
+}}
+
 
       onBack={() => setShowSwitchChild(false)}
       onAddChild={() => {

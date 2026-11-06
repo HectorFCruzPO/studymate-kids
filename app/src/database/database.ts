@@ -44,7 +44,41 @@ export async function initializeDatabase(): Promise<void> {
     ) VALUES (1, 0);
   `);
 
+  // Add language preferences to existing child profiles safely.
+  const columns = await db.getAllAsync<{
+    name: string;
+  }>('PRAGMA table_info(children)');
+
+  const hasLanguageColumn = columns.some(
+    (column) => column.name === 'language'
+  );
+
+  
+  if (!hasLanguageColumn) {
+    await db.execAsync(`
+      ALTER TABLE children
+      ADD COLUMN language TEXT NOT NULL DEFAULT 'en';
+    `);
+  }
+
+  // Add a language preference for the parent.
+  const parentColumns = await db.getAllAsync<{
+    name: string;
+  }>('PRAGMA table_info(parents)');
+
+  const hasParentLanguage = parentColumns.some(
+    (column) => column.name === 'language'
+  );
+
+  if (!hasParentLanguage) {
+    await db.execAsync(`
+      ALTER TABLE parents
+      ADD COLUMN language TEXT NOT NULL DEFAULT 'en';
+    `);
+  }
+
   await db.closeAsync();
+
 }
 
 export type ChildProfileData = {
@@ -126,6 +160,7 @@ export type SavedChild = {
   avatar_id: string;
   stars: number;
   coins: number;
+  language: 'en' | 'es';
 };
 
 export type SavedFamily = {
@@ -133,6 +168,7 @@ export type SavedFamily = {
     id: number;
     email: string;
     birth_year: number;
+    language: 'en' | 'es';
   };
   children: SavedChild[];
   activeChildId: number;
@@ -159,8 +195,11 @@ export async function loadFamily(): Promise<SavedFamily | null> {
       id: number;
       email: string;
       birth_year: number;
+      language: 'en' | 'es';
     }>(
-      'SELECT id, email, birth_year FROM parents LIMIT 1'
+      
+'SELECT id, email, birth_year, language FROM parents LIMIT 1'
+
     );
 
     if (!parent) {
@@ -168,7 +207,7 @@ export async function loadFamily(): Promise<SavedFamily | null> {
     }
 
     const children = await db.getAllAsync<SavedChild>(
-      `SELECT id, parent_id, name, age, avatar_id, stars, coins
+      `SELECT id, parent_id, name, age, avatar_id, stars, coins, language
        FROM children
        WHERE parent_id = ?
        ORDER BY id`,
@@ -288,6 +327,38 @@ export async function addChild(
     );
 
     return newChildId;
+  } finally {
+    await db.closeAsync();
+  }
+}
+
+export async function updateChildLanguage(
+  childId: number,
+  language: 'en' | 'es'
+): Promise<void> {
+  const db = await SQLite.openDatabaseAsync(DATABASE_NAME);
+
+  try {
+    await db.runAsync(
+      'UPDATE children SET language = ? WHERE id = ?',
+      [language, childId]
+    );
+  } finally {
+    await db.closeAsync();
+  }
+}
+
+export async function updateParentLanguage(
+  parentId: number,
+  language: 'en' | 'es'
+): Promise<void> {
+  const db = await SQLite.openDatabaseAsync(DATABASE_NAME);
+
+  try {
+    await db.runAsync(
+      'UPDATE parents SET language = ? WHERE id = ?',
+      [language, parentId]
+    );
   } finally {
     await db.closeAsync();
   }

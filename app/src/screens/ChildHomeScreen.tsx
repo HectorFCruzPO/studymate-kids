@@ -12,6 +12,7 @@ import {
 
 import type { SavedChild } from '../database/database';
 import { getAvatarWorld, worldColors, worldBackgrounds } from '../themes/avatarThemes';
+import { translations } from '../i18n/translations';
 
 
 
@@ -35,8 +36,9 @@ type Props = {
 export default function ChildHomeScreen({
   child,
   onSwitchChild,
-}: Props) {
-      const avatarImage =
+}: Props) {   
+    const t = translations[child.language === 'es' ? 'es' : 'en'];
+    const avatarImage =
     AVATAR_IMAGES[child.avatar_id as keyof typeof AVATAR_IMAGES] ??
     AVATAR_IMAGES.nova;       
     const { width, height } = useWindowDimensions();
@@ -142,31 +144,36 @@ style={[
           resizeMode="cover"
         />
        <View style={{ alignItems: 'center' }}>
-        <Text style={styles.title}>
-          Hi, {child.name}! 👋
-        </Text>
+       
+<Text style={styles.title}>
+  {t.greeting}, {child.name}! 👋
+</Text>
 
-        <Text style={styles.subtitle}>
-          Ready for an adventure?
-        </Text>
+<Text style={styles.subtitle}>
+  {t.ready}
+</Text>
 
-        <View style={styles.rewards}>
-          <Text style={styles.rewardText}>
-            ⭐ {child.stars} Stars
-          </Text>
 
-          <Text style={styles.rewardText}>
-            🪙 {child.coins} Coins
-          </Text>
-        </View>
+<View style={styles.rewards}>
+  <Text style={styles.rewardText}>
+    ⭐ {child.stars} {t.stars}
+  </Text>
+
+  <Text style={styles.rewardText}>
+    🪙 {child.coins} {t.coins}
+  </Text>
+</View>
+
       </View>
     </View>
     </View>
 
      
-    <Text style={styles.sectionTitle}>
-     Your Learning Adventures
-   </Text>
+   
+<Text style={styles.sectionTitle}>
+  {t.adventures}
+</Text>
+
 
 <View style={styles.grid}>
 
@@ -174,9 +181,11 @@ style={[
       
       <View  style={themedLearningCard}>
         <Text style={styles.cardIcon}>🔢</Text>
-        <Text style={styles.cardTitle}>
-          Numbers & Counting
-        </Text>
+       
+<Text style={styles.cardTitle}>
+  {t.numbers}
+</Text>
+
         </View>
 
 
@@ -192,9 +201,11 @@ style={[
 >
 
           <Text style={styles.cardIcon}>🔤</Text>
-          <Text style={styles.cardTitle}>
-            Letters & Sounds
-          </Text>
+          
+<Text style={styles.cardTitle}>
+  {t.letters}
+</Text>
+
         </View>
 
         
@@ -207,9 +218,11 @@ style={[
 >
 
           <Text style={styles.cardIcon}>🎨</Text>
-          <Text style={styles.cardTitle}>
-            Colors & Shapes
-          </Text>
+          
+<Text style={styles.cardTitle}>
+  {t.colors}
+</Text>
+
         </View>
 
        
@@ -222,9 +235,11 @@ style={[
 >
 
           <Text style={styles.cardIcon}>🦖</Text>
-          <Text style={styles.cardTitle}>
-            Animals & Discovery
-          </Text>
+          
+<Text style={styles.cardTitle}>
+  {t.animals}
+</Text>
+
         </View>
       </View>
 
