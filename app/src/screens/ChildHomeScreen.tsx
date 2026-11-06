@@ -52,6 +52,9 @@ const themedLearningCard = [
   {
     borderWidth: 2,
     borderColor: theme.secondary,
+    width: isLandscape ? '34%' : '47%',
+    minHeight: isLandscape ? 85 : 145,
+    padding: isLandscape ? 6 : 16,
   },
 ];
 
@@ -178,7 +181,16 @@ style={[
 
 
         
-        <View style={themedLearningCard}>
+        
+<View
+  style={[
+    themedLearningCard,
+    { backgroundColor: '#DBEAFE', 
+      minHeight: isLandscape ? 105 : 145,
+    },
+  ]}
+>
+
           <Text style={styles.cardIcon}>🔤</Text>
           <Text style={styles.cardTitle}>
             Letters & Sounds
@@ -186,7 +198,14 @@ style={[
         </View>
 
         
-        <View style={themedLearningCard}>
+        
+<View
+  style={[
+    themedLearningCard,
+    { backgroundColor: '#F3E8FF' },
+  ]}
+>
+
           <Text style={styles.cardIcon}>🎨</Text>
           <Text style={styles.cardTitle}>
             Colors & Shapes
@@ -194,7 +213,14 @@ style={[
         </View>
 
        
-        <View style={themedLearningCard}>
+        
+<View
+  style={[
+    themedLearningCard,
+    { backgroundColor: '#FFEDD5' },
+  ]}
+>
+
           <Text style={styles.cardIcon}>🦖</Text>
           <Text style={styles.cardTitle}>
             Animals & Discovery
@@ -224,6 +250,9 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 12,
     alignItems: 'center',
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 650,
     marginTop: 10,
   },
   
@@ -270,41 +299,65 @@ profileContent: {
     color: '#334155',
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#1E293B',
-    marginTop: 30,
-    marginBottom: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    alignSelf: 'center',
+    textAlign: 'center',
+    overflow: 'hidden',
+    marginTop: 16,
+    marginBottom: 14,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 12,
+    justifyContent: 'center',
+    columnGap: 50,
+    rowGap: 16,
   },
   learningCard: {
     width: '47%',
     minHeight: 145,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+    borderRadius: 28,
     padding: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+    elevation: 5,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
   },
   cardIcon: {
-    fontSize: 38,
-    marginBottom: 12,
+    fontSize: 52,
+    marginBottom: 10,
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#334155',
+    color: '#243B53',
     textAlign: 'center',
   },
   footer: {
     textAlign: 'center',
-    color: '#64748B',
-    marginTop: 30,
+    color: '#334155',
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 12,
     fontSize: 15,
+    fontWeight: 'bold',
+    lineHeight: 24,
+    alignSelf: 'center',
+    overflow: 'hidden',
   },
 });
